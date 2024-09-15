@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
 import { ProductoEntity } from '../producto/producto.entity';
 
-@Entity('tienda')
+@Entity('producto')
 export class TiendaEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
