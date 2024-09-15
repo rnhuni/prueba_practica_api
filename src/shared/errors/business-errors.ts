@@ -1,6 +1,8 @@
-/* eslint-disable prettier/prettier */
 export class BusinessLogicException extends Error {
-  constructor(public message: string, public type: BusinessError) {
+  constructor(
+    public message: string,
+    public type: BusinessError,
+  ) {
     super(message);
     this.name = 'BusinessLogicException';
   }

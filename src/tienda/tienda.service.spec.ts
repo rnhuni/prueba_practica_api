@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TiendaEntity } from './tienda.entity';
 import { Repository } from 'typeorm';
 import { faker } from '@faker-js/faker';
+import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 
 describe('TiendaService', () => {
   let service: TiendaService;
@@ -12,13 +13,8 @@ describe('TiendaService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TiendaService,
-        {
-          provide: getRepositoryToken(TiendaEntity),
-          useClass: Repository,
-        },
-      ],
+      imports: [...TypeOrmTestingConfig()],
+      providers: [TiendaService],
     }).compile();
 
     service = module.get<TiendaService>(TiendaService);
@@ -43,23 +39,27 @@ describe('TiendaService', () => {
     }
   };
 
+  it('debe estar definido', () => {
+    expect(service).toBeDefined();
+  });
+
   it('findAll retorna todas las tiendas', async () => {
     const tiendas = await service.findAll();
     expect(tiendas).not.toBeNull();
     expect(tiendas).toHaveLength(tiendasList.length);
   });
 
-  it('findOne retornabuna tienda por id', async () => {
+  it('findOne retorna una tienda por id', async () => {
     const storedTienda = tiendasList[0];
     const tienda = await service.findOne(storedTienda.id);
     expect(tienda).not.toBeNull();
     expect(tienda.nombre).toEqual(storedTienda.nombre);
   });
 
-  it('findOne lanzar una excepción por un id inválido', async () => {
+  it('findOne lanza una excepción por un id inválido', async () => {
     await expect(() => service.findOne('0')).rejects.toHaveProperty(
       'message',
-      'No se encontró la tienda con la identificación proporcionada.',
+      'No se encontró la tienda.',
     );
   });
 

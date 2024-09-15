@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ProductoEntity } from './producto.entity';
 import { Repository } from 'typeorm';
 import { faker } from '@faker-js/faker';
+import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 
 describe('ProductoService', () => {
   let service: ProductoService;
@@ -12,20 +13,14 @@ describe('ProductoService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ProductoService,
-        {
-          provide: getRepositoryToken(ProductoEntity),
-          useClass: Repository,
-        },
-      ],
+      imports: [...TypeOrmTestingConfig()],
+      providers: [ProductoService],
     }).compile();
 
     service = module.get<ProductoService>(ProductoService);
     repository = module.get<Repository<ProductoEntity>>(
       getRepositoryToken(ProductoEntity),
     );
-
     await seedDatabase();
   });
 
@@ -41,6 +36,10 @@ describe('ProductoService', () => {
       productosList.push(producto);
     }
   };
+
+  it('debe estar definido', () => {
+    expect(service).toBeDefined();
+  });
 
   it('findAll retorna todos los productos', async () => {
     const productos = await service.findAll();
@@ -63,7 +62,7 @@ describe('ProductoService', () => {
     );
   });
 
-  it('create retornarun nuevo producto', async () => {
+  it('create retorna un nuevo producto', async () => {
     const producto: ProductoEntity = {
       id: '',
       nombre: faker.commerce.productName(),
@@ -83,7 +82,7 @@ describe('ProductoService', () => {
     expect(storedProducto.precio).toEqual(newProducto.precio);
   });
 
-  it('update permite modificar un producto existente', async () => {
+  it('update modifica un producto existente', async () => {
     const producto = productosList[0];
     const updateProductoDto = {
       nombre: faker.commerce.productName(),
@@ -115,7 +114,7 @@ describe('ProductoService', () => {
     expect(deletedProducto).toBeNull();
   });
 
-  it('delete lanzar una excepción por un id inválido', async () => {
+  it('delete lanza una excepción por un id inválido', async () => {
     await expect(() => service.delete('0')).rejects.toHaveProperty(
       'message',
       'El producto con el id dado no fue encontrado',

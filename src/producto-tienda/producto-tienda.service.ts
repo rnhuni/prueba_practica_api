@@ -1,73 +1,105 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
-import {
-  BusinessError,
-  BusinessLogicException,
-} from '../shared/errors/business-errors';
-import { ProductoService } from '../producto/producto.service';
-import { TiendaService } from '../tienda/tienda.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TiendaEntity } from '../tienda/tienda.entity';
+import { ProductoEntity } from '../producto/producto.entity';
+import { Repository } from 'typeorm';
+import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
 
 @Injectable()
 export class ProductoTiendaService {
-  constructor(
-    private readonly productoService: ProductoService,
-    private readonly tiendaService: TiendaService,
-  ) {}
+    constructor(
+        @InjectRepository(ProductoEntity)
+        private readonly productoRepository: Repository<ProductoEntity>,
+     
+        @InjectRepository(TiendaEntity)
+        private readonly tiendaRepository: Repository<TiendaEntity>
+    ) {}
 
-  async addStoreToProduct(productoId: string, tiendaId: string): Promise<void> {
-    const producto = await this.productoService.findOne(productoId);
-    const tienda = await this.tiendaService.findOne(tiendaId);
+    async addStoreToProduct(productoId: string, tiendaId: string): Promise<ProductoEntity> {
+        const producto: ProductoEntity = await this.productoRepository.findOne({where: {id: productoId}, relations: ["tiendas"]}) 
+        if (!producto)
+          throw new BusinessLogicException("No se encontró el producto con el id indicado", BusinessError.NOT_FOUND);
 
-    if (producto.tiendas.find((t) => t.id === tienda.id)) {
-      throw new BusinessLogicException(
-        'La tienda ya está asociada',
-        BusinessError.PRECONDITION_FAILED,
-      );
+        const tienda: TiendaEntity = await this.tiendaRepository.findOne({where: {id: tiendaId}});
+        if (!tienda)
+          throw new BusinessLogicException("No se encontró la tienda con el id proporcionado", BusinessError.NOT_FOUND);
+     
+        const productoTienda: TiendaEntity = producto.tiendas.find(e => e.id === tienda.id);    
+        if (!productoTienda)
+          producto.tiendas = [...producto.tiendas, tienda];
+        return await this.productoRepository.save(producto);
+      }
+     
+    async findStoreFromProduct(productoId: string, tiendaId: string): Promise<TiendaEntity> {
+      const producto: ProductoEntity = await this.productoRepository.findOne({where: {id: productoId}, relations: ["tiendas"]}); 
+      if (!producto)
+        throw new BusinessLogicException("No se encontró el producto con el id indicado", BusinessError.NOT_FOUND)
+
+      const tienda: TiendaEntity = await this.tiendaRepository.findOne({where: {id: tiendaId}});
+      if (!tienda)
+        throw new BusinessLogicException("No se encontró la tienda con el id proporcionado", BusinessError.NOT_FOUND)
+        
+      const productoTienda: TiendaEntity = producto.tiendas.find(e => e.id === tienda.id);    
+      if (!productoTienda)
+        throw new BusinessLogicException("La tienda no está asociada al producto", BusinessError.NOT_FOUND)
+    
+      return productoTienda;
     }
-
-    producto.tiendas.push(tienda);
-    await this.productoService.update(productoId, producto);
-  }
-
-  async findStoresFromProduct(productoId: string) {
-    const producto = await this.productoService.findOne(productoId);
-    return producto.tiendas;
-  }
-
-  async findStoreFromProduct(productoId: string, tiendaId: string) {
-    const producto = await this.productoService.findOne(productoId);
-    const tienda = producto.tiendas.find((t) => t.id === tiendaId);
-    if (!tienda) {
-      throw new BusinessLogicException(
-        'La tienda no está asociada al producto',
-        BusinessError.NOT_FOUND,
-      );
+     
+    async findStoresFromProduct(productoId: string): Promise<TiendaEntity[]> {
+        const producto: ProductoEntity = await this.productoRepository.findOne({where: {id: productoId}, relations: ["tiendas"]});
+        if (!producto)
+          throw new BusinessLogicException("No se encontró el producto con el id indicado", BusinessError.NOT_FOUND)
+        
+        return producto.tiendas;
     }
-    return tienda;
-  }
+     
+    async updateStoresFromProduct(productoId: string, tiendas: string[]): Promise<ProductoEntity> {
+        const producto: ProductoEntity = await this.productoRepository.findOne({where: {id: productoId}, relations: ["tiendas"]});
+     
+        if (!producto)
+          throw new BusinessLogicException("No se encontró el producto con el id indicado", BusinessError.NOT_FOUND)
+     
+        producto.tiendas = []
+        for (let i = 0; i < tiendas.length; i++) {
+          const tienda: TiendaEntity = await this.tiendaRepository.findOne({where: {id: tiendas[i]}});
+          if (!tienda)
+            throw new BusinessLogicException("No se encontró la tienda con el id proporcionado", BusinessError.NOT_FOUND)
 
-  async updateStoresFromProduct(productoId: string, tiendaIds: string[]) {
-    const producto = await this.productoService.findOne(productoId);
-    const tiendas = await Promise.all(
-      tiendaIds.map((id) => this.tiendaService.findOne(id)),
-    );
-    producto.tiendas = tiendas;
-    await this.productoService.update(productoId, producto);
-    return producto.tiendas;
-  }
+          const productoTienda: TiendaEntity = producto.tiendas.find(e => e.id === tienda.id);   
+          if (!productoTienda) {
+            producto.tiendas = [...producto.tiendas, tienda];
+          }
+        }
+        
+        return await this.productoRepository.save(producto);
+      }
+     
+    async deleteStoreFromProduct(productoId: string, tiendaId: string){
+        const producto: ProductoEntity = await this.productoRepository.findOne({where: {id: productoId}, relations: ["tiendas"]});
+        if (!producto)
+          throw new BusinessLogicException("No se encontró el producto con el id indicado", BusinessError.NOT_FOUND)
+     
+        const tienda: TiendaEntity = await this.tiendaRepository.findOne({where: {id: tiendaId}});
+        if (!tienda)
+          throw new BusinessLogicException("No se encontró la tienda con el id proporcionado", BusinessError.NOT_FOUND)
+     
+        const productoTienda: TiendaEntity = producto.tiendas.find(e => e.id === tienda.id);
+     
+        if (!productoTienda)
+            throw new BusinessLogicException("La tienda no está asociada al producto", BusinessError.PRECONDITION_FAILED)
 
-  async deleteStoreFromProduct(
-    productoId: string,
-    tiendaId: string,
-  ): Promise<void> {
-    const producto = await this.productoService.findOne(productoId);
-    const tiendaIndex = producto.tiendas.findIndex((t) => t.id === tiendaId);
-    if (tiendaIndex === -1) {
-      throw new BusinessLogicException(
-        'La tienda no está asociada al producto',
-        BusinessError.NOT_FOUND,
-      );
-    }
-    producto.tiendas.splice(tiendaIndex, 1);
-    await this.productoService.update(productoId, producto);
+        producto.tiendas = producto.tiendas.filter(e => e.id !== tiendaId);
+        await this.productoRepository.save(producto);
+    }   
+
+    async deleteStoresFromProduct(productoId: string){
+      const producto: ProductoEntity = await this.productoRepository.findOne({where: {id: productoId}, relations: ["tiendas"]});
+      if (!producto)
+        throw new BusinessLogicException("No se encontró el producto con el id indicado", BusinessError.NOT_FOUND)
+   
+      producto.tiendas = [];
+      await this.productoRepository.save(producto);
   }
 }

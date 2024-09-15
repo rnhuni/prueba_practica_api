@@ -46,7 +46,7 @@ describe('TiendaController', () => {
     }
   };
 
-  it('debería retornar todas las tiendas', async () => {
+  it('retorna todas las tiendas', async () => {
     jest.spyOn(service, 'findAll').mockResolvedValue(tiendasList);
 
     const result = await controller.findAll();

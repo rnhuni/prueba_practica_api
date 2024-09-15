@@ -1,124 +1,110 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ProductoController } from './producto.controller';
 import { ProductoService } from './producto.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { ProductoEntity } from './producto.entity';
-import { Repository } from 'typeorm';
 import { faker } from '@faker-js/faker';
+import { ProductoDto } from './producto.dto';
 
-describe('ProductoService', () => {
+describe('ProductoController', () => {
+  let controller: ProductoController;
   let service: ProductoService;
-  let repository: Repository<ProductoEntity>;
   let productosList: ProductoEntity[];
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      controllers: [ProductoController],
       providers: [
-        ProductoService,
         {
-          provide: getRepositoryToken(ProductoEntity),
-          useClass: Repository,
+          provide: ProductoService,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([]),
+            findOne: jest.fn().mockResolvedValue(null),
+            create: jest.fn().mockResolvedValue(null),
+            update: jest.fn().mockResolvedValue(null),
+            delete: jest.fn(),
+          },
         },
       ],
     }).compile();
 
+    controller = module.get<ProductoController>(ProductoController);
     service = module.get<ProductoService>(ProductoService);
-    repository = module.get<Repository<ProductoEntity>>(
-      getRepositoryToken(ProductoEntity),
-    );
 
     await seedDatabase();
   });
 
   const seedDatabase = async () => {
-    repository.clear();
     productosList = [];
     for (let i = 0; i < 5; i++) {
-      const producto = await repository.save({
+      productosList.push({
+        id: faker.string.uuid(),
         nombre: faker.commerce.productName(),
         precio: parseFloat(faker.commerce.price()),
         tipo: faker.helpers.arrayElement(['Perecedero', 'No perecedero']),
+        tiendas: [],
       });
-      productosList.push(producto);
     }
   };
 
-  it('findAll retorna todos los productos', async () => {
-    const productos = await service.findAll();
-    expect(productos).not.toBeNull();
-    expect(productos).toHaveLength(productosList.length);
+  it('retorna todos los productos', async () => {
+    jest.spyOn(service, 'findAll').mockResolvedValue(productosList);
+
+    const result = await controller.findAll();
+    expect(result).toEqual(productosList);
   });
 
-  it('findOne retorna un producto por id', async () => {
-    const storedProducto = productosList[0];
-    const producto = await service.findOne(storedProducto.id);
-    expect(producto).not.toBeNull();
-    expect(producto.nombre).toEqual(storedProducto.nombre);
-    expect(producto.precio).toEqual(storedProducto.precio);
+  it('retorna un producto por id', async () => {
+    const producto = productosList[0];
+    jest.spyOn(service, 'findOne').mockResolvedValue(producto);
+
+    const result = await controller.findOne(producto.id);
+    expect(result).toEqual(producto);
   });
 
-  it('findOne lanza una excepción por un id inválido', async () => {
-    await expect(() => service.findOne('0')).rejects.toHaveProperty(
-      'message',
-      'El producto con el id dado no fue encontrado',
-    );
-  });
-
-  it('create retorna un nuevo producto', async () => {
-    const producto: ProductoEntity = {
-      id: '',
+  it('crea un nuevo producto', async () => {
+    const productoDto: ProductoDto = {
       nombre: faker.commerce.productName(),
       precio: parseFloat(faker.commerce.price()),
       tipo: 'Perecedero',
+    };
+
+    const newProducto: ProductoEntity = {
+      id: faker.string.uuid(),
+      ...productoDto,
       tiendas: [],
     };
 
-    const newProducto = await service.create(producto);
-    expect(newProducto).not.toBeNull();
+    jest.spyOn(service, 'create').mockResolvedValue(newProducto);
 
-    const storedProducto = await repository.findOne({
-      where: { id: newProducto.id },
-    });
-    expect(storedProducto).not.toBeNull();
-    expect(storedProducto.nombre).toEqual(newProducto.nombre);
-    expect(storedProducto.precio).toEqual(newProducto.precio);
+    const result = await controller.create(productoDto);
+    expect(result).toEqual(newProducto);
   });
 
-  it('update modifica un producto existente', async () => {
+  it('actualiza un producto existente', async () => {
     const producto = productosList[0];
-    const updateProductoDto = {
+    const updateProductoDto: ProductoDto = {
       nombre: faker.commerce.productName(),
       precio: parseFloat(faker.commerce.price()),
       tipo: 'No perecedero',
     };
 
-    const updatedProducto = await service.update(
-      producto.id,
-      updateProductoDto,
-    );
-    expect(updatedProducto).not.toBeNull();
+    const updatedProducto: ProductoEntity = {
+      ...producto,
+      ...updateProductoDto,
+    };
 
-    const storedProducto = await repository.findOne({
-      where: { id: producto.id },
-    });
-    expect(storedProducto).not.toBeNull();
-    expect(storedProducto.nombre).toEqual(updateProductoDto.nombre);
-    expect(storedProducto.precio).toEqual(updateProductoDto.precio);
+    jest.spyOn(service, 'update').mockResolvedValue(updatedProducto);
+
+    const result = await controller.update(producto.id, updateProductoDto);
+    expect(result).toEqual(updatedProducto);
   });
 
-  it('delete elimina un producto', async () => {
+  it('elimina un producto por id', async () => {
     const producto = productosList[0];
-    await service.delete(producto.id);
 
-    const deletedProducto = await repository.findOne({
-      where: { id: producto.id },
-    });
-    expect(deletedProducto).toBeNull();
-  });
+    jest.spyOn(service, 'delete').mockResolvedValue(undefined);
 
-  it('delete lanzar una excepción por un id inválido', async () => {
-    await expect(() => service.delete('0')).rejects.toHaveProperty(
-      'message',
-      'El producto con el id dado no existe',
-    );
+    await controller.delete(producto.id);
+    expect(service.delete).toHaveBeenCalledWith(producto.id);
   });
 });

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEnum, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsEnum, IsNumber, IsString, Min } from 'class-validator';
 
 export class ProductoDto {
   @IsNotEmpty()
@@ -7,6 +7,7 @@ export class ProductoDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @Min(0, { message: 'El precio debe ser un valor positivo' })
   precio: number;
 
   @IsNotEmpty()

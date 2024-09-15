@@ -8,7 +8,7 @@ export class TiendaDto {
   @IsNotEmpty()
   @IsString()
   @Length(3, 3, {
-    message: 'EL valor de ciudad debe ser un código de tres caracteres.',
+    message: 'El valor de ciudad debe ser un código de tres caracteres.',
   })
   ciudad: string;
 

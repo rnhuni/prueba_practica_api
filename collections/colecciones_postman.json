@@ -1,0 +1,382 @@
+{
+	"info": {
+		"_postman_id": "8b3419ec-f522-4fc7-acd2-56c1b56ff613",
+		"name": "Punto 4. Pruebas de Postman",
+		"description": "Pruebas para las entidades Producto, Tienda y la Asociación Producto-Tienda",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "18169730",
+		"_collection_link": "https://cloudy-satellite-811274.postman.co/workspace/My-Workspace~e34552e6-b757-4a66-8a07-4d5e14930044/collection/18169730-8b3419ec-f522-4fc7-acd2-56c1b56ff613?action=share&source=collection_link&creator=18169730"
+	},
+	"item": [
+		{
+			"name": "Producto",
+			"item": [
+				{
+					"name": "Crear un producto válido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set('product_id', jsonData.id);",
+									"pm.test('El ID del producto fue guardado', function() {",
+									"   pm.expect(jsonData.id).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"nombre\": \"Manzana\",\n\t\"precio\": 1.50,\n\t\"tipo\": \"Perecedero\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/products"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un producto inválido",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"nombre\": \"Producto inválido\",\n\t\"precio\": -10,\n\t\"tipo\": \"Desconocido\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/products"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener todos los productos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/products"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un producto por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/products/{{product_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un producto por un ID que no existe.",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/products/{{invalid_product_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un producto",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"nombre\": \"Manzana Actualizada\",\n\t\"precio\": 2.00,\n\t\"tipo\": \"Perecedero\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/products/{{product_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un producto por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/products/{{product_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un producto con un ID que no existe.",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/products/{{invalid_product_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tienda",
+			"item": [
+				{
+					"name": "Crear una tienda válida",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set('store_id', jsonData.id);",
+									"pm.test('El ID de la tienda fue guardado', function() {",
+									"   pm.expect(jsonData.id).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"nombre\": \"Tienda A\",\n\t\"ciudad\": \"BOG\",\n\t\"direccion\": \"Calle 123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/stores"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear una tienda inválida",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"nombre\": \"Tienda Inválida\",\n\t\"ciudad\": \"Bogotá\",\n\t\"direccion\": \"Calle 123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/stores"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener todas las tiendas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/stores"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener una tienda por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/stores/{{store_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener una tienda con un ID que no existe",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/stores/{{invalid_store_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar una tienda",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"nombre\": \"Tienda A Actualizada\",\n\t\"ciudad\": \"BOG\",\n\t\"direccion\": \"Calle 456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/stores/{{store_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una tienda por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/stores/{{store_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una tienda por ID que no existe",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/stores/{{invalid_store_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Asociación Producto-Tienda",
+			"item": [
+				{
+					"name": "Agregar una nueva tienda a un producto",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"productoId\": \"{{product_id}}\",\n\t\"tiendaId\": \"{{store_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/products/{{product_id}}/stores/{{store_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar las tiendas de un producto",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"tiendaIds\": [\"{{store_id}}\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/products/{{product_id}}/stores"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener todas las tiendas que ofrecen un producto",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/products/{{product_id}}/stores"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener la tienda que ofrecen un producto",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/products/{{product_id}}/stores/{{store_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener la tienda que ofrecen un producto que no existe",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/products/{{invalid_product_id}}/stores/{{store_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una tienda que ofrece un producto",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/products/{{product_id}}/stores/{{store_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar las tiendas que se ofrece un producto",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/products/{{product_id}}/stores"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una tienda que ofrece un producto con un id que no existe",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/products/{{product_id}}/stores/{{invalid_store_id}}"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "product_id",
+			"value": "033005fb-1690-49f4-a909-a99f4f40a957"
+		},
+		{
+			"key": "store_id",
+			"value": "d3086b02-6862-4c8e-bbb6-858e9652794e"
+		}
+	]
+}

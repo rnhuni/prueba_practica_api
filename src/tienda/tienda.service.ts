@@ -16,17 +16,18 @@ export class TiendaService {
   ) {}
 
   async findAll(): Promise<TiendaEntity[]> {
-    return this.tiendaRepository.find();
+    return this.tiendaRepository.find({ relations: ['productos'] });
   }
 
   async findOne(id: string): Promise<TiendaEntity> {
     const tienda: TiendaEntity = await this.tiendaRepository.findOne({
       where: { id },
+      relations: ['productos'],
     });
 
     if (!tienda)
       throw new BusinessLogicException(
-        'No se encontró la tienda con la identificación proporcionada.',
+        'No se encontró la tienda.',
         BusinessError.NOT_FOUND,
       );
 
@@ -48,7 +49,7 @@ export class TiendaService {
 
     if (!existingTienda)
       throw new BusinessLogicException(
-        'No se encontró la tienda con la identificación proporcionada.',
+        'No se encontró la tienda.',
         BusinessError.NOT_FOUND,
       );
 
@@ -67,7 +68,7 @@ export class TiendaService {
 
     if (!tienda)
       throw new BusinessLogicException(
-        'No se encontró la tienda con la identificación proporcionada.',
+        'No se encontró la tienda.',
         BusinessError.NOT_FOUND,
       );
 

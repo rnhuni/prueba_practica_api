@@ -29,6 +29,7 @@
     "class-validator": "^0.14.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "sqlite3": "^5.1.7",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
@@ -66,7 +67,12 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/modules/**",
+      "!**/*.module.(t|j)s",
+      "!main.ts",
+      "!**/*.dto.ts",
+      "!shared/**"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

@@ -6,28 +6,30 @@ import {
   Put,
   Body,
   Param,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProductoTiendaService } from './producto-tienda.service';
-import { ProductoTiendaDto } from './producto-tienda.dto';
+import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptor';
 
 @Controller()
+@UseInterceptors(BusinessErrorsInterceptor)
 export class ProductoTiendaController {
   constructor(private readonly productoTiendaService: ProductoTiendaService) {}
 
-  @Post('add')
+  @Post('products/:productoId/stores/:tiendaId')
   async addStoreToProduct(
-    @Body() productoTiendaDto: ProductoTiendaDto,
-  ): Promise<void> {
-    const { productoId, tiendaId } = productoTiendaDto;
+    @Param('productoId') productoId: string,
+    @Param('tiendaId') tiendaId: string,
+  ) {
     return this.productoTiendaService.addStoreToProduct(productoId, tiendaId);
   }
 
-  @Get('product/:id/stores')
+  @Get('products/:id/stores')
   async findStoresFromProduct(@Param('id') id: string) {
     return this.productoTiendaService.findStoresFromProduct(id);
   }
 
-  @Get('product/:productoId/stores/:tiendaId')
+  @Get('products/:productoId/stores/:tiendaId')
   async findStoreFromProduct(
     @Param('productoId') productoId: string,
     @Param('tiendaId') tiendaId: string,
@@ -38,7 +40,7 @@ export class ProductoTiendaController {
     );
   }
 
-  @Put('product/:id/stores')
+  @Put('products/:id/stores')
   async updateStoresFromProduct(
     @Param('id') id: string,
     @Body('tiendaIds') tiendaIds: string[],
@@ -46,7 +48,7 @@ export class ProductoTiendaController {
     return this.productoTiendaService.updateStoresFromProduct(id, tiendaIds);
   }
 
-  @Delete('product/:productoId/stores/:tiendaId')
+  @Delete('products/:productoId/stores/:tiendaId')
   async deleteStoreFromProduct(
     @Param('productoId') productoId: string,
     @Param('tiendaId') tiendaId: string,
@@ -55,5 +57,12 @@ export class ProductoTiendaController {
       productoId,
       tiendaId,
     );
+  }
+
+  @Delete('products/:productoId/stores')
+  async deleteStoresFromProduct(
+    @Param('productoId') productoId: string,
+  ): Promise<void> {
+    return this.productoTiendaService.deleteStoresFromProduct(productoId);
   }
 }

@@ -16,12 +16,13 @@ export class ProductoService {
   ) {}
 
   async findAll(): Promise<ProductoEntity[]> {
-    return this.productoRepository.find();
+    return this.productoRepository.find({ relations: ['tiendas'] });
   }
 
   async findOne(id: string): Promise<ProductoEntity> {
     const producto: ProductoEntity = await this.productoRepository.findOne({
       where: { id },
+      relations: ['tiendas'],
     });
 
     if (!producto)
